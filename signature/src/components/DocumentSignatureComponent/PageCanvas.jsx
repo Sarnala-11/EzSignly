@@ -7,7 +7,7 @@ export default function PageCanvas({
   pageIndex,
   signatures = [],
   onChangeSignature,
-  onRemoveSignature
+  onRemoveSignature,
 }) {
   const [pageImg] = useImage(page?.src || null);
 
@@ -31,7 +31,6 @@ export default function PageCanvas({
         className="pdf-page"
       >
         <Layer ref={layerRef}>
-
           {pageImg && (
             <KImage
               image={pageImg}
@@ -48,18 +47,25 @@ export default function PageCanvas({
               sig={sig}
               isSelected={selectedId === sig.id}
               onSelect={() => setSelectedId(sig.id)}
+              onDeselect={() => setSelectedId(null)}
               onChange={(patch) => onChangeSignature(sig.id, patch)}
               onDelete={() => onRemoveSignature(sig.id)}
             />
           ))}
-
         </Layer>
       </Stage>
     </div>
   );
 }
 
-function SigImage({ sig, isSelected, onSelect, onChange, onDelete }) {
+function SigImage({
+  sig,
+  isSelected,
+  onSelect,
+  onChange,
+  onDelete,
+  onDeselect,
+}) {
   const [img] = useImage(sig.src, "anonymous");
   const shapeRef = useRef();
   const trRef = useRef();
@@ -68,6 +74,7 @@ function SigImage({ sig, isSelected, onSelect, onChange, onDelete }) {
     if (isSelected && trRef.current && shapeRef.current) {
       trRef.current.nodes([shapeRef.current]);
       trRef.current.getLayer().batchDraw();
+      console.log(shapeRef.current, "shapeRef.current");
     }
   }, [isSelected]);
 
@@ -91,12 +98,21 @@ function SigImage({ sig, isSelected, onSelect, onChange, onDelete }) {
             x: e.target.x(),
             y: e.target.y(),
           });
+          onDeselect();
+        }}
+        onMouseDown={(e) => {
+          e.cancelBubble = true;
+          onSelect();
+        }}
+        onTouchStart={(e) => {
+          e.cancelBubble = true;
+          onSelect();
         }}
         onTransformEnd={() => {
           const node = shapeRef.current;
           const scaleX = node.scaleX();
           const scaleY = node.scaleY();
-
+          console.log(node, "NODE");
           node.scaleX(1);
           node.scaleY(1);
 

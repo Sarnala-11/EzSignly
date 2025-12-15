@@ -1,23 +1,17 @@
 import { useEffect } from "react";
-import * as pdfjsLib from "pdfjs-dist";
+import * as pdfjsLib from "pdfjs-dist/build/pdf";
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  "pdfjs-dist/build/pdf.worker.min.mjs",
-  import.meta.url
-).toString();
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
 export default function PdfViewer({ file, onPagesLoaded }) {
   useEffect(() => {
     if (!file) return;
 
-    let cancelled = false;
+    const loadPdf = async () => {
+      const buffer = await file.arrayBuffer();
 
-    const renderPdf = async () => {
-      const arrayBuffer = await file.arrayBuffer();
-
-      const pdf = await pdfjsLib.getDocument({
-        data: arrayBuffer,
-      }).promise;
+      const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
 
       const pages = [];
 
@@ -40,19 +34,11 @@ export default function PdfViewer({ file, onPagesLoaded }) {
         });
       }
 
-      if (!cancelled) {
-        onPagesLoaded({
-          pages,
-          originalPdfBytes: arrayBuffer,
-        });
-      }
+      onPagesLoaded({ pages, originalPdfBytes: buffer });
     };
 
-    renderPdf();
-
-    return () => {
-      cancelled = true;
-    };
+    loadPdf();
   }, [file, onPagesLoaded]);
 
+  return null;
 }

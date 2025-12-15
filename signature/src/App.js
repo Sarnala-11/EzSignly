@@ -223,9 +223,17 @@ function App() {
             className="btn"
             onClick={() => {
               const stage = window.__CURRENT_KONVA_STAGE__;
+              const transformer = window.__CURRENT_KONVA_TRANSFORMER__;
               if (!stage) return alert("Canvas not ready.");
 
+              if (transformer) transformer.visible(false);
+              stage.draw();
+
               const dataUrl = stage.toDataURL({ pixelRatio: 2 });
+
+              if( transformer) transformer.visible(true);
+              stage.draw();
+
               const a = document.createElement("a");
               a.href = dataUrl;
               a.download = `signed-page-${currentPageIndex + 1}.png`;
